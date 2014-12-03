@@ -1,5 +1,5 @@
 BigBadWolf
-==========
+===================
 import math, random, pylab, numpy, matplotlib
 import Vizu
 
@@ -164,7 +164,7 @@ class Grid(object):
             if self.eatTile(tile):
                 for pred in self.predList:
                     if (discretePos(Position(animal.position.x, animal.position.y))) == discretePos(pred.position):
-                                  pred.health += animal.health/5
+                                  pred.health += animal.health/2
                                   break
                 self.preyList.remove(animal)
                 self.sheepEaten +=1
@@ -231,7 +231,7 @@ class Animal(object):
         self.position = pos
 
     def starve(self):
-        if self.health < 0:
+        if self.health < -15:
             return True
         else:
             return False
@@ -266,10 +266,11 @@ class Prey(Animal):
         
         
 def runSim(n_pred, n_prey, speed, width, length, n_steps,
-           s_health, r_health, loss, gain):
+           s_health, w_rep_health, s_rep_health, loss, gain):
     """
     s_health: starting health value
-    p_health: health value to reproduce animal
+    w_rep_health: health value to reproduce wolf
+    s_rep_health: health value to reproduce sheep
     """
     predList = []
     preyList = []
@@ -280,9 +281,9 @@ def runSim(n_pred, n_prey, speed, width, length, n_steps,
     bornSheepList = []
     starvedList = []
     for i in range(n_pred):
-        predList.append(Predator(speed, s_health, loss, r_health, width, length))
+        predList.append(Predator(speed, s_health, loss, w_rep_health, width, length))
     for i in range(n_prey):
-        preyList.append(Prey(speed, s_health, gain, r_health, width, length))
+        preyList.append(Prey(speed, s_health, gain, s_rep_health, width, length))
 
     grid = Grid(width, length, predList, preyList)
 
@@ -290,7 +291,7 @@ def runSim(n_pred, n_prey, speed, width, length, n_steps,
 
     for t in range(n_steps):
         sheepEaten, sheepBorn, wolfBorn, wolfStarved = grid.update()
-        print "T=", t, "Eaten:", sheepEaten, "SBorn", sheepBorn, "WBorn", wolfBorn, "WS", wolfStarved
+        print "T=", t, "Eaten:", sheepEaten, "SBorn", sheepBorn, "WBorn", wolfBorn, "WStarved", wolfStarved
         NPred.append(len(grid.predList))
         NPrey.append(len(grid.preyList))
         eatenSheepList.append(sheepEaten)
@@ -303,10 +304,10 @@ def runSim(n_pred, n_prey, speed, width, length, n_steps,
     #print NPred, NPrey
     pylab.plot(range(n_steps), NPred, label = 'Number of predators')
     pylab.plot(range(n_steps), NPrey, label = 'Number of preys')
-##    pylab.plot(range(n_steps), eatenSheepList, label = 'Number of sheeps eaten')
-##    pylab.plot(range(n_steps), bornSheepList, label = 'Number of sheep born')
-##    pylab.plot(range(n_steps), bornWolfList, label = 'Number of wolf born')
-##    pylab.plot(range(n_steps), starvedList, label = 'Number of wolfs starved')
+    pylab.plot(range(n_steps), eatenSheepList, label = 'Number of sheeps eaten')
+    pylab.plot(range(n_steps), bornSheepList, label = 'Number of sheep born')
+    pylab.plot(range(n_steps), bornWolfList, label = 'Number of wolf born')
+    pylab.plot(range(n_steps), starvedList, label = 'Number of wolfs starved')
     pylab.title('No Free Lunch') 
     pylab.ylabel('Number of animals') 
     pylab.xlabel('Time steps')
@@ -318,6 +319,6 @@ def runSim(n_pred, n_prey, speed, width, length, n_steps,
     #while(len(grid.predList)+len(grid.preyList) == length*width):
         
     
-n_pred = 20; n_prey = 80; speed = 1; width = 25; length = 25; n_steps = 1000;
-s_health = 100; r_health = 200; loss = 5; gain = 14;
-runSim(n_pred, n_prey, speed, width, length, n_steps, s_health, r_health, loss, gain)
+n_pred = 10; n_prey = 50; speed = 1; width = 25; length = 25; n_steps = 500;
+s_health = 100; w_rep_health = 200; s_rep_health = 300; loss = 10; gain = 20;
+runSim(n_pred, n_prey, speed, width, length, n_steps, s_health, w_rep_health, s_rep_health, loss, gain)
