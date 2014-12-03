@@ -1,5 +1,5 @@
-BigBadWolf
-===================
+####BigBadWolf
+####################
 import math, random, pylab, numpy, matplotlib
 import Vizu
 
@@ -37,13 +37,11 @@ class Grid(object):
         self.tiles2 = []
         self.predList = predList
         self.preyList = preyList
-        c = 0
         for i in range(width):
            for j in range(length):
                 "First represents predator, second prey"
                 self.tiles[(i,j)] = [0,0]
-                c+=1
-        print c
+
         for p in self.predList:
             self.predAtPosition(p.position)
         for p in self.preyList:
@@ -164,13 +162,13 @@ class Grid(object):
             if self.eatTile(tile):
                 for pred in self.predList:
                     if (discretePos(Position(animal.position.x, animal.position.y))) == discretePos(pred.position):
-                                  pred.health += animal.health/2
+                                  pred.health += animal.health
                                   break
                 self.preyList.remove(animal)
                 self.sheepEaten +=1
             #Give birth if health is high
             if (animal.birth() and self.freeList != []):
-                child = Prey(animal.speed, animal.health/2, animal.loss,
+                child = Prey(animal.speed, animal.health/3, animal.loss,
                                  animal.birthHealth, animal.width, animal.length)
                 positionx, positiony = self.freeList[0]
                 posit = Position(positionx+.5, positiony+.5)
@@ -231,7 +229,7 @@ class Animal(object):
         self.position = pos
 
     def starve(self):
-        if self.health < -15:
+        if self.health < 40:
             return True
         else:
             return False
@@ -261,7 +259,6 @@ class Prey(Animal):
             return newPrey
 
     def updateHealth(self):
-        if random.random() > 0.2:
             self.health = self.health + self.dHealth
         
         
@@ -288,27 +285,36 @@ def runSim(n_pred, n_prey, speed, width, length, n_steps,
     grid = Grid(width, length, predList, preyList)
 
     #anim = Vizu.FoodVisualization(n_pred, n_prey, width, length)
+    timeList = []
 
     for t in range(n_steps):
+        timeList.append(t)
         sheepEaten, sheepBorn, wolfBorn, wolfStarved = grid.update()
-        print "T=", t, "Eaten:", sheepEaten, "SBorn", sheepBorn, "WBorn", wolfBorn, "WStarved", wolfStarved
+        print "T=", t, "Eaten:", sheepEaten, "SBorn:", sheepBorn, "WBorn:", wolfBorn, "WStarved:", wolfStarved
         NPred.append(len(grid.predList))
         NPrey.append(len(grid.preyList))
         eatenSheepList.append(sheepEaten)
         bornWolfList.append(wolfBorn)
         bornSheepList.append(sheepBorn)
         starvedList.append(wolfStarved)
+        if len(grid.predList) == 0 or len(grid.preyList) == 0:
+            break
         #anim.update(grid.predList, grid.preyList)
 
     #anim.done()
     #print NPred, NPrey
-    pylab.plot(range(n_steps), NPred, label = 'Number of predators')
-    pylab.plot(range(n_steps), NPrey, label = 'Number of preys')
-    pylab.plot(range(n_steps), eatenSheepList, label = 'Number of sheeps eaten')
-    pylab.plot(range(n_steps), bornSheepList, label = 'Number of sheep born')
-    pylab.plot(range(n_steps), bornWolfList, label = 'Number of wolf born')
-    pylab.plot(range(n_steps), starvedList, label = 'Number of wolfs starved')
-    pylab.title('No Free Lunch') 
+    pylab.plot(timeList, NPred, label = 'Number of predators')
+    pylab.plot(timeList, NPrey, label = 'Number of preys')
+##    pylab.plot(timeList, eatenSheepList, label = 'Number of sheeps eaten')
+##    pylab.plot(timeList, bornSheepList, label = 'Number of sheep born')
+##    pylab.plot(timeList, bornWolfList, label = 'Number of wolf born')
+##    pylab.plot(timeList, starvedList, label = 'Number of wolfs starved')
+
+    title = 'Start: Pred= ' + str(n_pred) + ' Prey= ' + str(n_prey) + \
+            ' Size= ' + str(width) + '*' + str(length) +' Health= ' + \
+            str(s_health) + ' Sreproduce= ' + str(s_rep_health) + \
+            ' Wreproduce= ' + str(w_rep_health) + ' Stepsize= ' + str(speed)
+    pylab.title(title) 
     pylab.ylabel('Number of animals') 
     pylab.xlabel('Time steps')
     pylab.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05),
@@ -319,6 +325,6 @@ def runSim(n_pred, n_prey, speed, width, length, n_steps,
     #while(len(grid.predList)+len(grid.preyList) == length*width):
         
     
-n_pred = 10; n_prey = 50; speed = 1; width = 25; length = 25; n_steps = 500;
-s_health = 100; w_rep_health = 200; s_rep_health = 300; loss = 10; gain = 20;
+n_pred = 220; n_prey = 180; speed = 0.1; width = 50; length = 50; n_steps = 5000;
+s_health = 100; w_rep_health = 130; s_rep_health = 115; loss = 3; gain = 5;
 runSim(n_pred, n_prey, speed, width, length, n_steps, s_health, w_rep_health, s_rep_health, loss, gain)
