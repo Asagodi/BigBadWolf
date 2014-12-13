@@ -1,5 +1,3 @@
-#BigBadWolf
-#==========
 import math, random, pylab, numpy, matplotlib, time
 #import Vizu
 import matplotlib.pyplot as plt
@@ -87,13 +85,16 @@ class Grid(object):
             return False
         
     def getRandomPosition(self):
+        "Returns random position to initialize"
         x = random.uniform(0, self.width)
         y = random.uniform(0, self.height)
         return Position(x, y)
 
     def update(self):
         self.updateTiles()
+        #Iterate over every predator in predList
         for animal in self.predList:
+            #lose some health
             animal.updateHealth()
             pos = animal.position
             discPos = discretePos(pos)
@@ -107,10 +108,11 @@ class Grid(object):
             #Else move
             else:
                 positionx, positiony = discretePos(animal.updateRandomPosition())
-                #If moved to occupied tile, move to free tile
+                #If moved to occupied tile, move to random free tile
                 if (self.tiles[ (positionx, positiony) ][0] == 1 and self.freeList != []):
                         index = random.randint(0, len(self.freeList)-1)
                         positionx, positiony = self.freeList[index]
+                        #place animal in the middle of the tile
                         posit = Position(positionx+.5, positiony+.5)
                         animal.updateFreePosition(posit)
                         self.freeList.pop(index)
@@ -141,6 +143,7 @@ class Grid(object):
 
                     
         for animal in self.preyList:
+            #Gain some health
             animal.updateHealth()
             pos = animal.position
             discPos = discretePos(pos)
@@ -246,22 +249,11 @@ class Animal(object):
  
 
 class Predator(Animal):
-    def reproduce(self, r_health):
-            newPredator = Predator(self.grid, self.speed, self.health,
-                                   self.energy/2, self. width, self.length)
-            self.health = self.health/2
-            return newPredator
-
     def updateHealth(self):
         self.health = self.health - self.dHealth
 
         
 class Prey(Animal):
-    def reproduce(self, r_health):
-            newPrey = Prey(self.grid, self.speed, self.health, self.energy/2)   
-            self.health = self.health/2
-            return newPrey
-
     def updateHealth(self):
         self.health = self.health + self.dHealth
         
@@ -302,7 +294,8 @@ def runSim(n_pred, n_prey, speed, width, length, n_steps,
     bornSheepList = []
     starvedList = []
     for i in range(n_pred):
-        predList.append(Predator(speed, 20*numpy.random.normal()+s_health, loss, w_rep_health, width, length))
+    #Give normaldistritution to health of animals
+        predList.append(Predator(speed, numpy.random.normal()+s_health, loss, w_rep_health, width, length))
     for i in range(n_prey):
         preyList.append(Prey(speed, numpy.random.normal()+50, gain, s_rep_health, width, length))
 
@@ -323,7 +316,7 @@ def runSim(n_pred, n_prey, speed, width, length, n_steps,
         starvedList.append(wolfStarved)
         if t%100==0:
             print "T=", t,"\t Time=", round(time.time()-start_time,1), "seconds"
-
+        #Draw graph
         if draw:
             xmin, xmax = graph.get_xlim()
             ymin, ymax = graph.get_ylim()
@@ -355,9 +348,10 @@ def runSim(n_pred, n_prey, speed, width, length, n_steps,
 #     #anim.done()
 
     
-n_pred = 1; n_prey = 100; speed = 0.5; width = 100; length = 100; n_steps = 5000;
-s_health = 600; w_rep_health = 2000; s_rep_health = 200; loss = 10; gain = 0.5;
+n_pred = 20; n_prey = 100; speed = 1; width = 500; length = 500; n_steps = 500;
+s_health = 100; w_rep_health = 200; s_rep_health = 75; loss = 0.11; gain = 0.1;
 draw = True; draw_interval = 10
 
-runSim(n_pred, n_prey, speed, width, length, n_steps, s_health, w_rep_health, s_rep_health,
+runSim(n_pred, n_prey, speed, width, length,
+       n_steps, s_health, w_rep_health, s_rep_health,
        loss, gain, draw, draw_interval)
